@@ -4,13 +4,14 @@ const ExtractTextPlugin = require("extract-text-webpack-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 //获取html-webpack-plugin参数的方法
-var getHtmlConfig=function (name) {
+var getHtmlConfig=function (name,title) {
     return {
-        template:'./src/view/'+name+'.html',
-        filename:'view/'+name+'.html',
-        inject:true,
-        hash:true,
-        chunks:['common',name]
+        template :'./src/view/'+name+'.html',
+        filename :'view/'+name+'.html',
+        title    :title,
+        inject   :true,
+        hash     :true,
+        chunks   :['common',name]
     }
 }
 
@@ -19,11 +20,31 @@ var config = {
     entry: {
         common:['./src/page/common/index.js'],
         index: ['./src/page/index/index.js'],
-        login: ['./src/page/login/index.js']
+        login: ['./src/page/login/index.js'],
+        result: ['./src/page/result/index.js']
+    },
+
+    //配置别名
+    resolve:{
+      alias:{
+        node_modules:path.resolve(__dirname, 'node_modules/'),
+        util        :path.resolve(__dirname, 'src/util/'),
+        page        :path.resolve(__dirname,'src/page/'),
+        service     :path.resolve(__dirname,'src/service/'),
+        image       :path.resolve(__dirname,'src/image/')
+      }
     },
 
     devServer: {
-        contentBase: './dist'
+       contentBase: path.join(__dirname, 'dist'),
+       port: 8080,
+       inline: true,
+       proxy : {
+            '**/*.do' : {
+                target: 'http://test.happymmall.com',
+                changeOrigin : true
+            }
+       }
     },
 
     output:{
@@ -48,8 +69,9 @@ var config = {
         new ExtractTextPlugin("css/[name].css"),
 
     //html模版的处理
-        new HtmlWebpackPlugin(getHtmlConfig('index')),
-        new HtmlWebpackPlugin(getHtmlConfig('login')),
+        new HtmlWebpackPlugin(getHtmlConfig('index','首页')),
+        new HtmlWebpackPlugin(getHtmlConfig('login','用户登录')),
+        new HtmlWebpackPlugin(getHtmlConfig('result','操作结果')), 
     ],
 
      module: {
@@ -63,7 +85,7 @@ var config = {
             },
 
             { 
-                test : /\.(gif|png|jpe?g|woff|svg|eot|ttf)$/, 
+                test : /\.(gif|png|jpe?g|woff|svg|eot|ttf|woff2)$/, 
                 use: [
                 {
                     loader: 'file-loader',
@@ -74,9 +96,21 @@ var config = {
                 }
                 ]
             },
+
+            { 
+                test : /\.string$/, 
+                use: [
+                {
+                    loader: 'html-loader',
+                }
+                ]
+            },
+
         ],
 
     },
+
+    
 
 };
 
